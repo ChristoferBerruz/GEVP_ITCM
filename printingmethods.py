@@ -4,13 +4,23 @@ import numpy as np
 
 
 def printGEVP_withErrors(Eigevalues_avg_errors, to, outf_name):
+	'''
+	Print the results of GEVP including the errors for each eigval.
+	:param Eigevalues_avg_errors: array_like, ndarray containing eigvals and eigerrors
+	:param to: step at which the weight matrix was stablished.
+	:param outf_name: output file name
+	:return:
+	'''
 	f = open(outf_name, "w")
 	p, nt, ni = Eigevalues_avg_errors.shape
+	f.write("# t, eigval, error\n")
 	with f:
 		for t in range(to+1, nt):
 			f.write(" %d " % t)
 			for i in range(ni):
-				f.write("  %.16E  %.16E  " %(Eigevalues_avg_errors[0,t,i], Eigevalues_avg_errors[1,t,i]))
+				f.write("  %.16E  " % Eigevalues_avg_errors[0,t,i])
+			for i in range(ni):
+				f.write("  %.16E  " % Eigevalues_avg_errors[1,t,i])
 			f.write("\n")
 
 
