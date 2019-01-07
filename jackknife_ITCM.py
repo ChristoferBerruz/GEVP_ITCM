@@ -12,11 +12,17 @@ def jackknife_ITCM(ITCM, SIGN):
 
 
 def walker(ITCM_Real, SIGN, s,p,t,real_or_imag):
-	"""
-	#param: s, p, and t are indexes for the current starting point.
-			real_or_imag shall be an integer 0, 1 for real or imag part respectively.
-	#return: C matrix for current s, p, and t skipping s and p.
-	"""
+	'''
+	Iterates over nsamp, nproc skipping current s, p (samp, proc)
+	:param ITCM_Real: Real or Imag part only of ITCM
+	:param SIGN: SIGN structure
+	:param s: current samp
+	:param p: current proc
+	:param t: current tau
+	:param real_or_imag: (int) real or imag part of SIGN. Must be between 0-1
+	:return sum(C(t,i)/SIGN(i)) for i != (s,p):
+	FIXME: List comprehension approach desirable. Computation time not efficient enough.
+	'''
 	nsamp, nproc, nt, ni, nj = ITCM_Real.shape
 	dummy_c = np.zeros((ni, nj), dtype=float)
 	dummy_s = 0
