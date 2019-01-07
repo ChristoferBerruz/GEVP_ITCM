@@ -4,8 +4,16 @@ import h5py
 import math
 import jackknife_ITCM as jk
 import printingmethods as printm
+import comparisonmethods as compm
 
 def getStructures_fromH5File(hdf5_filename, key):
+	'''
+	Retrieve a given value for a key in a specified hdf5 file.
+	:param hdf5_filename: name of the Hdf5 file.
+	:param key: key to be retrieved.
+	:return t: array_like, the value of the key.
+	FIXME: Note that key need to be parsed, no interaction with console.
+	'''
 	with h5py.File(hdf5_filename, "r") as f:
 		try:
 			t = f.get(key).value
@@ -15,6 +23,14 @@ def getStructures_fromH5File(hdf5_filename, key):
 			print("Error at getStructures_fromH5File: " + str(e))
 
 def GEVP(ITCM, SIGN, to):
+	'''
+	Generalized Eigen Value Problem for ITCM matrix with SIGN problem
+	:param ITCM: array_like, ITCM Matrix
+	:param SIGN: array_like, SIGN Matrix
+	:param to: step at which the weight matrix is established
+	:return Eigvals_with_errors: array_like,  matrix dependent on t>to containing eigvals and eigerrors.
+	FIXME: List comprehension approach not yet achieved. Computing time has improved, yet still desirable.
+	'''
 	ITCM_JK = jk.jackknife_ITCM(ITCM, SIGN)
 	nsamp, nproc, nt, ni, nj = ITCM_JK.shape
 	Eigenvalues = np.zeros((nsamp, nproc, nt, ni), dtype=np.float64)
@@ -40,8 +56,9 @@ def GEVP(ITCM, SIGN, to):
 
 def symmetricMatrix(A):
 	'''
-	:param: A is a 2-D matrix
-	:return: symmetric version of A copying the upper triangular matrix
+	This method forces a matrix to be symmetric.
+	:param A: 2-D matrix
+	:return S_symm: symmetric version of A copying the upper triangular matrix
 	'''
 	ni, nj = A.shape
 	l = 1
@@ -52,16 +69,32 @@ def symmetricMatrix(A):
 		l += 1
 	return A_symm
 
-def main():
-	filename = "10Be.db32.nb016.h5.A"
+def solveGEV(hdf5filename, to):
+	'''
+	Driver to solve GEVP.
+	:param hdf5filename: HDF5 file to solve.
+	:param to: step at which weight matrix is selected.
+	:return:
+	FIXME: Files are generated properly. Global integration still on the work.
+	'''
+	filename = hdf5filename
 	ITCM = getStructures_fromH5File(filename, 'C(K=2,pi=+)')
 	SIGN = getStructures_fromH5File(filename, 'sign')
-	to = 0
 	Eigvals_and_errors = GEVP(ITCM, SIGN, to)
 	outfile_gevp = filename + ".GEVP.txt"
 	outfile_itcm = filename + ".ITCM.txt"
 	printm.printGEVP_withErrors(Eigvals_and_errors, to, outfile_gevp)
-	printm.printITCM(outfile_itcm,ITCM,avg=False)
+	printm.printITCM(outfile_itcm, ITCM, avg=False)
+
+
+def main():
+	filename = "10Be.db32.nb016.h5.A"
+	to = 0
+	solveGEV(filename,to)
+	outfile_GEVP = "10Be.db32.nb016.h5.A" + ".GEVP.txt"
+	comparisonfile = "test.lamb.NoChange"
+	compm.GEVP(outfile_GEVP,comparisonfile,to)
+
 
 
 if __name__ == '__main__':main()
