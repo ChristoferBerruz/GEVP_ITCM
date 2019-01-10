@@ -24,11 +24,12 @@ def printGEVP_withErrors(Eigevalues_avg_errors, to, outf_name):
 			f.write("\n")
 
 
-def printITCM(fname, ITCM, avg):
+def printITCM(fname, ITCM, avg, SIGN):
 	'''
-	This method prints the matrix ITCM to a text file
+	This method prints the matrix C dependent on t.
 	:param ITCM: ITCM Matrix
 	:param avg: bool stating if ITCM was averaged over nsamp, nproc.
+	:param SIGN: SIGN strcuture
 	:return:
 	'''
 	nt = ni = nj = 0
@@ -38,6 +39,7 @@ def printITCM(fname, ITCM, avg):
 		ITCM_Avg = np.mean(ITCM[:,:,:,:,:,0], axis=(0, 1), dtype=np.float64)
 		ITCM = ITCM_Avg
 		nt, ni, nj = ITCM_Avg.shape
+	ITCM = np.true_divide(ITCM, np.mean(SIGN, axis=(0,1), dtype=np.float64)[0])
 	f = open(fname, "w")
 	with f:
 		for t in range(nt):

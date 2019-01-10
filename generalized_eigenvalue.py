@@ -24,7 +24,7 @@ def getStructures_fromH5File(hdf5_filename, key):
 
 def GEVP(ITCM, SIGN, to):
 	'''
-	Generalized Eigen Value Problem for ITCM matrix with SIGN problem
+	Generalized Eigen Value Problem for C(t) dependent on samp, proc matrix with SIGN problem
 	:param ITCM: array_like, ITCM Matrix
 	:param SIGN: array_like, SIGN Matrix
 	:param to: step at which the weight matrix is established
@@ -33,13 +33,14 @@ def GEVP(ITCM, SIGN, to):
 	'''
 	ITCM_JK = jk.jackknife_ITCM(ITCM, SIGN)
 	nsamp, nproc, nt, ni, nj = ITCM_JK.shape
-	Eigenvalues = np.zeros((nsamp, nproc, nt, ni), dtype=np.float64)
+	Eigenvalues = np.zeros((nsamp, nproc, nt, ni), dtype=np.float64) #contains eigenvalues
 	#Calculating eigenvalues per samp, proc, t > to.
+	#If t<to default is 0.0
 	for samp in range(nsamp):
 		for proc in range(nproc):
 			for t in range(to+1,nt):
 				B = symmetricMatrix(np.array(ITCM_JK[samp, proc, to], dtype=np.float64))
-				A = symmetricMatrix(np.array(ITCM_JK[samp,proc,t], dtype=np.float64))
+				A = symmetricMatrix(np.array(ITCM_JK[samp, proc, t], dtype=np.float64))
 				Eigenvalues[samp, proc, t], _ = la.eigh(A, B, lower=False)
 	#Averaging eigenvalues over nsamp, nproc
 	Eigenvalues_averaged = np.mean(Eigenvalues, axis=(0,1), dtype=np.float64)
@@ -84,17 +85,16 @@ def solveGEV(hdf5filename, to):
 	outfile_gevp = filename + ".GEVP.txt"
 	outfile_itcm = filename + ".ITCM.txt"
 	printm.printGEVP_withErrors(Eigvals_and_errors, to, outfile_gevp)
-	printm.printITCM(outfile_itcm, ITCM, avg=False)
+	printm.printITCM(outfile_itcm, ITCM, avg=False, SIGN=SIGN)
 
 
 def main():
 	filename = "10Be.db32.nb016.h5.A"
 	to = 0
 	solveGEV(filename,to)
-	outfile_GEVP = "10Be.db32.nb016.h5.A" + ".GEVP.txt"
+	outfile_GEVP = filename + ".GEVP.txt"
 	comparisonfile = "test.lamb.NoChange"
-	compm.GEVP(outfile_GEVP,comparisonfile,to)
-
+	compm.GEVP(outfile_GEVP,comparisonfile,to, savePDF=False, filename=filename)
 
 
 if __name__ == '__main__':main()

@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
-def GEVP(f1_name, f2_name, to, savePDF=False):
+def GEVP(f1_name, f2_name, to, savePDF,filename):
     '''
     Comparison results of a GEVP. Same format is assumed (or at least some exception are managed)
-    :param f1_name: One of the files for comparison
-    :param f2_name: The other file for comparison.
-    :param savePDF:
+    :param f1_name: One file
+    :param f2_name: Another file
+    :param savePDF: bool. Save or not to a PDF file.
     :return:
     '''
     to += 1
@@ -31,6 +32,20 @@ def GEVP(f1_name, f2_name, to, savePDF=False):
                         else:
                             errors.append(abs(float(cline1[s]) - float(cline2[s])))
                     to +=1
+    if savePDF:
+        pdf = PdfPages(filename + ".pdf")
+    fig1 = plt.figure(figsize=(7,5.5))
     plt.plot(t, eigvals, 'o',markersize=1.50)
-    plt.title("Eigvals")
+    plt.title("Eigvals Comparison")
     plt.show()
+    if savePDF:
+        pdf.savefig(fig1, bbox_inches ='tight')
+        plt.close()
+    fig2 = plt.figure(figsize=(7,5.5))
+    plt.plot(t, errors, 'o', markersize=1.50)
+    plt.title("Errors Comparison")
+    plt.show()
+    if savePDF:
+        pdf.savefig(fig2, bbox_inches='tight')
+        plt.close()
+        pdf.close()
